@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>DELULU – G.L.O.E.W Dating Game</title>
+
+<style>
+/* RESET */
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
+  background: #f0edf4;
+  color: #333;
+  text-align: center;
+  padding: 20px;
+}
+
+/* SCREENS */
+.screen { display: none; }
+.active { display: block; }
+
+/* HOME SCREEN */
+.home h1 {
+  font-size: 38px;
+  font-weight: 800;
+  color: #5d368e;
+  margin-bottom: 10px;
+}
+
+.home img {
+  width: 260px;
+  border-radius: 20px;
+  margin-bottom: 10px;
+}
+
+.btn {
+  width: 80%;
+  max-width: 300px;
+  padding: 14px;
+  margin: 10px auto;
+  font-size: 18px;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  display: block;
+}
+
+.btn-primary { background: #5d368e; color: white; }
+.btn-secondary { background: #cbb7dd; color: #3d2764; }
+
+/* GAME CARD */
+.card {
+  background: white;
+  width: 88%;
+  margin: 20px auto 0;
+  border-radius: 18px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+  padding-bottom: 20px;
+}
+
+/* simple fade-slide animation when a new card appears */
+.card-animate {
+  animation: fadeCard 0.35s ease;
+}
+@keyframes fadeCard {
+  from { opacity: 0; transform: translateY(12px) scale(0.98); }
+  to   { opacity: 1; transform: translateY(0)    scale(1); }
+}
+
+.card img {
+  width: 100%;
+  height: 360px;
+  object-fit: cover;
+  border-radius: 18px 18px 0 0;
+}
+
+.card .name {
+  font-size: 24px;
+  font-weight: 700;
+  margin: 12px 0;
+}
+
+.card .desc {
+  font-size: 15px;
+  padding: 10px 20px;
+  display: none; /* hidden until swipe */
+}
+
+.flag-box {
+  margin-top: 10px;
+  display: none; /* hidden until swipe */
+}
+
+.flag {
+  padding: 6px 16px;
+  border-radius: 20px;
+  font-weight: 700;
+  color: white;
+  display: inline-block;
+}
+
+.green { background: #3CB043; }
+.yellow { background: #E0B000; }
+.red { background: #D90000; }
+
+.swipe-buttons button {
+  width: 42%;
+  padding: 14px;
+  margin-top: 15px;
+  font-size: 16px;
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+}
+
+.left  { background: #ff5e8e; color: white; }
+.right { background: #8051a7; color: white; }
+
+/* END SCREEN */
+.reflection-list {
+  text-align: left;
+  width: 90%;
+  margin: 20px auto;
+  font-size: 16px;
+  line-height: 1.5;
+}
+
+#analyticsSummary {
+  margin-top: 10px;
+  font-size: 15px;
+  color: #444;
+}
+</style>
+</head>
+<body>
+
+<!-- HOME SCREEN -->
+<div id="home" class="screen active home">
+  <img src="images/Delulu-Cover.PNG" alt="Delulu cover" />
+  <h1>DELULU 💜</h1>
+  <p>A G.L.O.E.W Dating Awareness Game</p>
+
+  <button class="btn btn-primary" onclick="startGame()">Start Game</button>
+  <button class="btn btn-secondary" onclick="showInstructions()">How to Play</button>
+  <button class="btn btn-secondary" onclick="openDirectory()">View Directory</button>
+</div>
+
+<!-- GAME SCREEN -->
+<div id="game" class="screen">
+
+  <button class="btn btn-secondary" onclick="endGame()">End Game</button>
+
+  <div class="card" id="card">
+    <img id="img" src="" alt="profile" />
+    <div class="name" id="name"></div>
+
+    <div class="flag-box" id="flagBox">
+      <span class="flag" id="flagTag"></span>
+    </div>
+
+    <div class="desc" id="desc"></div>
+
+    <div class="swipe-buttons">
+      <button class="left" onclick="swipe('left')">Swipe Left ❌</button>
+      <button class="right" onclick="swipe('right')">Swipe Right ✅</button>
+    </div>
+
+    <button class="btn btn-primary" onclick="nextMan()" id="nextBtn" style="display:none">Next</button>
+  </div>
+</div>
+
+<!-- END / REFLECTION SCREEN -->
+<div id="end" class="screen">
+  <h1>DELULU 💜</h1>
+  <p>Your awareness is your superpower.</p>
+
+  <h3 style="margin-top:16px;">Reflection Questions</h3>
+  <ul class="reflection-list">
+    <li>Are red flags easier to spot in others than in ourselves?</li>
+    <li>Which man would be the easiest to ignore a red flag for?</li>
+    <li>Which man would be the hardest to ignore a red flag for?</li>
+    <li>Did anyone seem perfect until you read the details?</li>
+    <li>Which red flag felt familiar?</li>
+    <li>What non-negotiables do you want to hold onto moving forward?</li>
+    <li>How can you tell the difference between excitement and emotional safety?</li>
+  </ul>
+
+  <p id="analyticsSummary"></p>
+
+  <button class="btn btn-primary" onclick="goHome()">Return Home</button>
+</div>
+
+<script>
+/* ---------------------------------------------------
+   MEN ARRAY (65 profiles)
+   --------------------------------------------------- */
+const men = [
+  {name:"Jayden, 24",   img:"images/Jayden24.PNG",   desc:"Checks in regularly and remembers the small things you say, but shuts down when you try to talk about deeper emotions. Says he’s just not used to opening up, and can get irritated when you gently ask questions.", flag:"yellow"},
+  {name:"Malik, 23",    img:"images/Malik23.PNG",    desc:"Very supportive of your goals and encourages you to take opportunities. Has a jealous streak and often asks for reassurance even when nothing is wrong.", flag:"yellow"},
+  {name:"Isaiah, 25",   img:"images/Isaiah25.PNG",   desc:"Extremely charming, remembers dates and details, compliments you daily. Posts flirtatious captions and interactions online for attention and says it’s just social media if you raise it.", flag:"red"},
+  {name:"Rafael, 26",   img:"images/Rafael26.PNG",   desc:"Protective to the point of hovering. Wants to drive you everywhere, suggests what outfits you should wear and gets moody when you spend time with friends without him.", flag:"red"},
+  {name:"Kade, 24",     img:"images/Kade24.PNG",     desc:"Emotionally aware and great at giving advice. When it comes to your feelings, he sometimes says you’re being dramatic or overthinking instead of listening properly.", flag:"red"},
+  {name:"Tre, 24",      img:"images/Tre24.PNG",      desc:"Gentle, calm and patient. Takes accountability when he’s wrong and genuinely listens. Struggles with consistency because he often prioritises work over quality time.", flag:"green"},
+  {name:"Zion, 21",     img:"images/Zion21.PNG",     desc:"Tells you you’re different from other girls, brings you little gifts and calls you his peace. Avoids defining the relationship and tends to disappear when life gets stressful.", flag:"red"},
+  {name:"Elias, 23",    img:"images/Elias23.PNG",    desc:"Deep thinker, creative and passionate. Writes you poems and encourages your healing. Overshares trauma early and leans on you heavily for emotional support.", flag:"yellow"},
+  {name:"Cairo, 24",    img:"images/Cairo24.PNG",    desc:"Very honest and straightforward. Disciplined, hardworking and respects your boundaries. Struggles to show affection unless you ask directly and says he wasn’t raised to be openly emotional.", flag:"green"},
+  {name:"Rico, 23",     img:"images/Rico23.PNG",     desc:"Respectful and well-mannered, opens doors and encourages independence. Shuts down when you express emotional needs and sees vulnerability as pressure.", flag:"red"},
+  {name:"Shae, 21",     img:"images/Shae21.PNG",     desc:"Fun and spontaneous, loves planning last-minute dates. Inconsistent with effort—one week he’s obsessed with you, the next he’s distant and blames it on stress.", flag:"red"},
+  {name:"Eden, 22",     img:"images/Eden22.PNG",     desc:"Career-focused, financially stable and emotionally intelligent. Hates vulnerability in himself and often hides feelings behind jokes or logic.", flag:"red"},
+  {name:"Zaire, 28",    img:"images/Zaire28.PNG",    desc:"Spiritual and intense, talks about energy and alignment. When he hurts you, he frames it as a lesson from the universe instead of taking responsibility.", flag:"red"},
+  {name:"Cruz, 23",     img:"images/Cruz23.PNG",     desc:"Consistent and romantic at first, plans thoughtful dates. Struggles with insecurity and can become clingy, jealous and emotionally demanding very quickly.", flag:"red"},
+  {name:"Noah, 21",     img:"images/Noah21.PNG",     desc:"Sweet and gentle on the surface. Has a past arrest for domestic disputes (not charged) and is known to become possessive and controlling in relationships.", flag:"red"},
+  {name:"Leo, 24",      img:"images/Leo24.PNG",      desc:"Quiet and emotionally deep. Shares personal stories early, making the connection feel intense. Expects the same from you and gets disappointed if you aren’t ready.", flag:"red"},
+  {name:"Amir, 27",     img:"images/Amir27.PNG",     desc:"Kind and attentive, loves home life and having his own space. Still involved in shotting and has only had one secure job, which he left. Says he’ll stop once he’s stable—he’s been saying this for six years.", flag:"red"},
+  {name:"Jalen, 23",    img:"images/Jalen23.PNG",    desc:"Kind and patient, checks in regularly. Avoids conversations about commitment and says he prefers to go with the flow even after months of dating.", flag:"red"},
+  {name:"Deion, 25",    img:"images/Deion25.PNG",    desc:"Protective and loyal, makes sure you get home safe and checks in often. Gets jealous quickly over small things and calls it having a big heart.", flag:"red"},
+  {name:"Zain, 23",     img:"images/Zain23.PNG",     desc:"Easygoing, laid-back and funny. Withdraws when there’s conflict and prefers to wait for things to blow over instead of addressing them.", flag:"yellow"},
+  {name:"Kai, 26",      img:"images/Kai26.PNG",      desc:"Mature and grounded, focused on his career and future. Shows care in practical ways, but sometimes makes work the priority so you end up fitting around his schedule.", flag:"yellow"},
+  {name:"Dre, 30",      img:"images/Dre30.PNG",      desc:"Magnetic and charming, easily the centre of attention. Enjoys flirting and entertaining multiple options, avoids anything that feels like a label.", flag:"red"},
+  {name:"Jayce, 29",    img:"images/Jayce29.PNG",    desc:"Loving and expressive, tells you how much you mean to him early. Trauma dumps quickly and forms fast emotional attachment which can feel overwhelming.", flag:"yellow"},
+  {name:"Matteo, 24",   img:"images/Matteo24.PNG",   desc:"Honest and grounded, values transparency. Can be blunt and say things in a way that feels harsh even when he doesn’t intend it to.", flag:"yellow"},
+  {name:"Adrian, 28",   img:"images/Adrian28.PNG",   desc:"Confident, loyal and protective. Has high standards for himself and his partner, expects consistency and can be quite firm about his boundaries.", flag:"green"},
+  {name:"Kenji, 27",    img:"images/Kenji27.PNG",    desc:"Reliable and straightforward, dislikes mixed signals. Communicates clearly and prefers honesty, though his directness can sometimes feel a bit sharp.", flag:"green"},
+  {name:"Aries, 28",    img:"images/Aries28.PNG",    desc:"Charming, creative and into star signs. Loves predicting your reactions from your chart and sometimes assumes your feelings based on your zodiac instead of asking you directly.", flag:"yellow"},
+  {name:"Tariq, 29",    img:"images/Tariq29.PNG",    desc:"Calm and emotionally aware. Communicates thoughtfully, values safety and trust and prefers to take his time before committing deeply.", flag:"green"},
+  {name:"Taiwo, 26",    img:"images/Taiwo26.PNG",    desc:"Kind and thoughtful. As a twin, he’s still figuring out who he is separately and sometimes mirrors other people’s preferences to avoid conflict.", flag:"green"},
+  {name:"Connor, 27",   img:"images/Connor27.PNG",   desc:"Loyal and funny, plans thoughtful dates and checks in consistently. Values emotional honesty and is interested in long-term partnership.", flag:"green"},
+  {name:"Jerrell, 28",  img:"images/Jerrell28.PNG",  desc:"Grounded and emotionally intelligent. Pays attention to your needs, keeps his word and invests in mutual respect and growth.", flag:"green"},
+  {name:"Charlie, 26",  img:"images/Charlie26.PNG",  desc:"Multiple convictions for GBH, extremely charming and generous. Love-bombs with expensive gifts early and likes to monitor your social media.", flag:"red"},
+  {name:"Beau, 27",     img:"images/Beau27.PNG",     desc:"Confident and adventurous, loves trying new things and bringing you along. Moves quickly and expects others to match his energy and pace.", flag:"yellow"},
+  {name:"Grant, 29",    img:"images/Grant29.PNG",    desc:"Gym-focused and social, enjoys attention and has a big mixed friend group. Prioritises nights out and can be inconsistent with regular routines.", flag:"yellow"},
+  {name:"Jonas, 25",    img:"images/Jonas25.PNG",    desc:"Thoughtful and supportive, listens well and encourages your goals. Prefers slow, intentional relationships but can be a little unpredictable.", flag:"yellow"},
+  {name:"Micah, 24",    img:"images/Micah24.PNG",    desc:"Loving and respectful, very family-oriented. Lives with his mum and is highly attached to her approval, which can influence his decisions heavily.", flag:"yellow"},
+  {name:"Damari, 32",   img:"images/Damari32.PNG",   desc:"Confident and disciplined, shows intense affection early on. Sometimes avoids accountability by reframing situations and goes quiet when unhappy.", flag:"red"},
+  {name:"Nico, 25",     img:"images/Nico25.PNG",     desc:"Quiet, observant and protective. Shows care through actions rather than words. Tends to hold his emotions in, creating distance during conflict.", flag:"yellow"},
+  {name:"Indra, 27",    img:"images/Indra27.PNG",    desc:"Passionate and romantic, loves providing and leading. Often talks about having a big family and a partner who focuses on home life so he can handle everything else.", flag:"yellow"},
+  {name:"Luca, 23",     img:"images/Luca23.PNG",     desc:"Impulsive in arguments, has a pattern of blocking and unblocking partners. Apologises quickly but doesn’t always change his behaviour.", flag:"red"},
+  {name:"Everton, 30",  img:"images/Everton30.PNG",  desc:"Easygoing and funny, encourages independence and communicates clearly. Values emotional maturity and prefers things to progress slowly.", flag:"green"},
+  {name:"Justin, 26",   img:"images/Justin26.PNG",   desc:"Confident and flirtatious, enjoys being admired. Generous with gifts, avoids routine and prefers passion over structure.", flag:"yellow"},
+  {name:"Harley, 27",   img:"images/Harley27.PNG",   desc:"Easygoing and consistent, enjoys stable routines and is financially responsible. Values loyalty, peace and long-term partnership.", flag:"green"},
+  {name:"Soren, 24",    img:"images/Soren24.PNG",    desc:"Warm and emotionally open, communicates clearly and enjoys deep conversations. Prioritises transparency and healthy connection.", flag:"green"},
+  {name:"Milo, 26",     img:"images/Milo26.PNG",     desc:"Laid-back and thoughtful, loves deep late-night chats. Tends to drift into his own world and can become distant without noticing.", flag:"yellow"},
+  {name:"Jonah, 28",    img:"images/Jonah28.PNG",    desc:"Emotionally present and consistent, values honesty. Has children and is actively involved in their lives, balances responsibilities well.", flag:"green"},
+  {name:"Neal, 24",     img:"images/Neal24.PNG",     desc:"Warm and attentive, remembers small details and plans ahead. Very structured and can struggle when plans change last minute.", flag:"yellow"},
+  {name:"Ryan, 26",     img:"images/Ryan26.PNG",     desc:"Romantic and introspective, writes poems and enjoys quiet one-to-one time. Gets attached quickly and finds it hard to stay independent once he’s invested.", flag:"yellow"},
+  {name:"Andre, 22",    img:"images/Andre22.PNG",    desc:"Affectionate in private and genuinely interested in your dreams. Still texts his ex to check she’s okay and gets defensive when questioned. Her version of the past suggests he can be threatening when angry.", flag:"red"},
+  {name:"Simeon, 28",   img:"images/Simeon28.PNG",   desc:"Deep thinker, protective and emotionally stable. When stressed, he disappears for long periods and expects you to silently understand. Has four children and is a nature lover.", flag:"yellow"},
+  {name:"Lucien, 27",   img:"images/Lucien27.PNG",   desc:"Reads, journals and meditates; has done real emotional work. Believes he’s more healed than most people and can talk down to you during disagreements, calling it teaching. No relationship with family and few friends because he says they’re all toxic.", flag:"yellow"},
+  {name:"Michael, 26",  img:"images/Michael26.PNG",  desc:"Disciplined, hardworking and family-oriented. Avoids conflict so much that he disappears for hours rather than having difficult conversations.", flag:"yellow"},
+  {name:"Reese, 26",    img:"images/Reese26.PNG",    desc:"Extremely consistent and loyal, messages good morning every day. Struggles to apologise properly—he buys gifts instead of acknowledging the hurt.", flag:"yellow"},
+  {name:"Miles, 26",    img:"images/Miles26.PNG",    desc:"Playful, fun and always joking. Calls himself honest to a fault. Makes jokes about things you’re insecure about and expects you to handle banter like him.", flag:"red"},
+  {name:"Tariq, 24",    img:"images/Tariq24.PNG",    desc:"Charismatic and funny, makes you feel like the only girl in the room. Flirtatious online for attention and says it’s just harmless banter.", flag:"red"},
+  {name:"Jordan, 22",   img:"images/Jordan22.PNG",   desc:"Super consistent, plans real dates and makes you feel secure. Moves very fast and talks about the future after a few weeks, which can feel overwhelming.", flag:"yellow"},
+  {name:"Milan, 23",    img:"images/Milan23.PNG",    desc:"Gentle communicator and prioritises emotional safety. Overthinks everything and needs constant reassurance that you’re not upset with him.", flag:"yellow"},
+  {name:"Saif, 25",     img:"images/Saif25.PNG",     desc:"Calm, soft-spoken and extremely observant. Remembers everything you say. Asks where you are for safety, but becomes uneasy when you go places he didn’t expect.", flag:"yellow"},
+  {name:"Kwame, 28",    img:"images/Kwame28.PNG",    desc:"Protective, hardworking and deeply loyal. Values structure and routine, maintains high standards and struggles to show vulnerability openly.", flag:"green"},
+  {name:"Tony, 38",     img:"images/Tony38.PNG",     desc:"Wants a life partner to whisk away to the Caribbean, prioritises peace and stability, handles conflict maturely and provides well. Much older than you and in a very different life stage.", flag:"yellow"},
+  {name:"Jameson, 24",  img:"images/Jameson24.PNG",  desc:"Calm, steady and financially stable. Prefers long-term relationships and shows love through acts of service, though he struggles with verbal affection.", flag:"green"},
+  {name:"Tyrese, 22",   img:"images/Tyrese22.PNG",   desc:"Playful and flirty, enjoys attention and entertains multiple conversations. Not always upfront about who he’s seeing and gets defensive when questioned.", flag:"red"},
+  {name:"Callum, 26",   img:"images/Callum26.PNG",   desc:"Adventurous and charming, loves spontaneous trips and avoids routine. Prioritises freedom over responsibility and disconnects when things get serious.", flag:"red"},
+  {name:"Rowan, 27",    img:"images/Rowan27.PNG",    desc:"Artistic, expressive and affectionate. Forms intense attachments quickly and gets jealous when you spend time with male friends. Prefers to know where you are at all times.", flag:"red"},
+  {name:"Keenan, 24",   img:"images/Keenan24.PNG",   desc:"Reliable, emotionally secure and consistent. Respects boundaries, supports your goals and shows genuine interest in building something steady.", flag:"green"}
+];
+
+/* GAME STATE + ANALYTICS */
+let current = null;
+let totalSwipes = 0;
+let leftSwipes = 0;
+let rightSwipes = 0;
+let rightOnRed = 0;
+let rightOnYellow = 0;
+let rightOnGreen = 0;
+
+/* SCREEN HELPERS */
+function showScreen(id) {
+  document.querySelectorAll(".screen").forEach(s => s.classList.remove("active"));
+  document.getElementById(id).classList.add("active");
+}
+
+function startGame() {
+  resetAnalytics();
+  showScreen("game");
+  nextMan();
+}
+
+function openDirectory() {
+  window.location.href = "directory.html";
+}
+
+function showInstructions() {
+  alert(
+    "HOW TO PLAY DELULU 💜\n\n" +
+    "• Read each profile as if it was a real dating app.\n" +
+    "• Swipe LEFT to pass, RIGHT to entertain.\n" +
+    "• After you swipe, you’ll see the actual flag and behaviour.\n" +
+    "Use it to practise choosing peace over potential."
+  );
+}
+
+function endGame() {
+  // show analytics summary
+  const summary = document.getElementById("analyticsSummary");
+  summary.textContent =
+    `You made ${totalSwipes} swipes. ` +
+    `You swiped RIGHT on ${rightSwipes} men: ` +
+    `${rightOnGreen} green flags, ${rightOnYellow} yellow flags and ${rightOnRed} red flags.`;
+  showScreen("end");
+}
+
+function goHome() {
+  showScreen("home");
+}
+
+/* CARD FLOW */
+function nextMan() {
+  current = men[Math.floor(Math.random() * men.length)];
+
+  const card = document.getElementById("card");
+  card.classList.remove("card-animate");
+  void card.offsetWidth; // reset animation
+  card.classList.add("card-animate");
+
+  document.getElementById("img").src = current.img;
+  document.getElementById("name").innerText = current.name;
+
+  document.getElementById("desc").style.display = "none";
+  document.getElementById("flagBox").style.display = "none";
+  document.getElementById("nextBtn").style.display = "none";
+}
+
+/* SWIPE + REVEAL */
+function swipe(direction) {
+  if (!current) return;
+
+  totalSwipes++;
+  if (direction === "left") {
+    leftSwipes++;
+  } else {
+    rightSwipes++;
+    if (current.flag === "red") rightOnRed++;
+    if (current.flag === "yellow") rightOnYellow++;
+    if (current.flag === "green") rightOnGreen++;
+  }
+
+  // reveal description + flag
+  const descEl = document.getElementById("desc");
+  const flagBox = document.getElementById("flagBox");
+  const flagTag = document.getElementById("flagTag");
+
+  descEl.innerText = current.desc;
+  descEl.style.display = "block";
+
+  flagTag.innerText = current.flag.toUpperCase() + " FLAG";
+  flagTag.className = "flag " + current.flag;
+  flagBox.style.display = "block";
+
+  document.getElementById("nextBtn").style.display = "block";
+}
+
+/* ANALYTICS RESET */
+function resetAnalytics() {
+  totalSwipes = 0;
+  leftSwipes = 0;
+  rightSwipes = 0;
+  rightOnRed = 0;
+  rightOnYellow = 0;
+  rightOnGreen = 0;
+}
+</script>
+
+</body>
+</html>
