@@ -99,7 +99,7 @@ men.forEach(name => {
   div.className = "card";
   div.dataset.search = label.toLowerCase();
   div.innerHTML = `
-    <img src="images/${name}.PNG" alt="${label}">
+    <img src="images/${name}.PNG" alt="${label}" onclick="openImage('images/${name}.PNG')">
     <div class="name">${label}</div>
   `;
   list.appendChild(div);
@@ -113,6 +113,19 @@ document.getElementById("searchBox").addEventListener("input", e => {
   });
 });
 </script>
+<div id="imageModal" class="modal" onclick="closeImage()">
+  <img id="modalImage" class="modal-content">
+</div>
 
+<script>
+function openImage(src) {
+  document.getElementById("modalImage").src = src;
+  document.getElementById("imageModal").style.display = "flex";
+}
+
+function closeImage() {
+  document.getElementById("imageModal").style.display = "none";
+}
+</script>
 </body>
 </html>
