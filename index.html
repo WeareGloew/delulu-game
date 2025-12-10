@@ -69,10 +69,13 @@ body {
 }
 
 .card img {
-  width: 100%;
-  height: 360px;
-  object-fit: cover;
-  border-radius: 18px 18px 0 0;
+    width: 100%;
+    height: auto;
+    max-height: 450px;
+    object-fit: contain;
+    background-color: #000; /* optional: clean black background behind images */
+    border-top-left-radius: 18px;
+    border-top-right-radius: 18px;
 }
 
 .card .name {
@@ -131,10 +134,47 @@ body {
   font-size: 15px;
   color: #444;
 }
+  <!-- Lightbox popup styles -->
+<style>
+#lightboxOverlay {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background: rgba(0,0,0,0.85);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 99999;
+}
+
+#lightboxOverlay img {
+    max-width: 90%;
+    max-height: 90%;
+    border-radius: 16px;
+    box-shadow: 0 0 20px rgba(255,255,255,0.2);
+}
+</style>
+
+<!-- Lightbox popup script -->
+<script>
+function openLightbox(src) {
+    const overlay = document.getElementById('lightboxOverlay');
+    const img = document.getElementById('lightboxImage');
+    img.src = src;
+    overlay.style.display = 'flex';
+}
+
+function closeLightbox() {
+    document.getElementById('lightboxOverlay').style.display = 'none';
+}
+</script>
 </style>
 </head>
 <body>
-
+<div id="lightboxOverlay" onclick="closeLightbox()">
+    <img id="lightboxImage" src="">
+</div>
+  
 <!-- HOME SCREEN -->
 <div id="home" class="screen active home">
   <img src="images/Delulu-Cover.PNG" alt="Delulu cover" />
